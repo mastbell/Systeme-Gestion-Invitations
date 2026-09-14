@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Gestion des invités</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; background: #0f1115; color: #eaeaea; }
+  h1 { font-size: 22px; } h2 { font-size: 17px; margin-top: 36px; border-top: 1px solid #2a2d34; padding-top: 24px; }
+  label { display: block; margin-top: 12px; font-size: 14px; color: #aaa; }
+  input, select { width: 100%; padding: 10px; margin-top: 4px; border-radius: 6px; border: 1px solid #333; background: #1a1c22; color: #eaeaea; box-sizing: border-box; }
+  button { margin-top: 16px; padding: 10px 18px; border-radius: 6px; border: none; background: #D4AF37; color: #111; font-weight: 600; cursor: pointer; }
+  #resultat { margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 14px; white-space: pre-wrap; }
+  .ok { background: #16341f; color: #7ee39a; } .err { background: #3a1a1a; color: #ff9d9d; }
+</style>
+</head>
+<body>
+<h1>🎟️ Gestion de l'événement</h1>
+
+<h2>1. Créer un événement</h2>
+<label>Nom de l'événement</label><input id="ev-nom" placeholder="Gala annuel AgriVision">
+<label>Date</label><input id="ev-date" type="date">
+<label>Lieu</label><input id="ev-lieu" placeholder="Yaoundé, Hôtel Mont-Fébé">
+<button onclick="creerEvenement()">Créer l'événement</button>
+
+<h2>2. Uploader le modèle d'invitation</h2>
+<label>Événement ID</label><input id="modele-ev-id" type="number" placeholder="1">
+<label>Fichier image (PNG)</label><input id="modele-fichier" type="file" accept="image/png">
+<button onclick="uploaderModele()">Uploader le modèle</button>
+
+<h2>3. Ajouter un invité</h2>
+<label>Événement ID</label><input id="inv-ev-id" type="number" placeholder="1">
+<label>Nom</label><input id="inv-nom">
+<label>Prénom</label><input id="inv-prenom">
+<label>Téléphone (format international, ex: +237...)</label><input id="inv-tel">
+<label>Grade</label>
+<select id="inv-grade">
+  <option value="classique">Classique</option>
+  <option value="vip">VIP</option>
+  <option value="prestige">Prestige</option>
+</select>
+<button onclick="ajouterInvite()">Ajouter l'invité et générer son invitation</button>
+
+<div id="resultat"></div>
+
+<script>
+function afficher(data, ok) {
+  const el = document.getElementById("resultat");
+  el.className = ok ? "ok" : "err";
+  el.textContent = JSON.stringify(data, null, 2);
+}
+
+async function creerEvenement() {
+  const body = {
+    nom: document.getElementById("ev-nom").value,
+    date_evenement: document.getElementById("ev-date").value,
+    lieu: document.getElementById("ev-lieu").value,
+  };
+  const r = await fetch("/evenements/", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+  afficher(await r.json(), r.ok);
+}
+
+async function uploaderModele() {
+  const evId = document.getElementById("modele-ev-id").value;
+  const fichier = document.getElementById("modele-fichier").files[0];
+  const form = new FormData();
+  form.append("fichier", fichier);
+  const r = await fetch(`/evenements/${evId}/modele`, { method: "POST", body: form });
+  afficher(await r.json(), r.ok);
+}
+
+async function ajouterInvite() {
+  const evId = document.getElementById("inv-ev-id").value;
+  const body = {
+    nom: document.getElementById("inv-nom").value,
+    prenom: document.getElementById("inv-prenom").value,
+    telephone: document.getElementById("inv-tel").value,
+    grade: document.getElementById("inv-grade").value,
+  };
+  const r = await fetch(`/evenements/${evId}/invites/`, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body) });
+  afficher(await r.json(), r.ok);
+}
+</script>
+</body>
+</html>

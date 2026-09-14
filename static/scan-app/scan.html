@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan des invitations</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #0f1115; color: #fff; text-align: center; }
+  h1 { font-size: 18px; padding: 16px; margin: 0; }
+  #zone-scan { width: 100%; max-width: 420px; margin: 0 auto; }
+  #resultat { margin: 20px auto; max-width: 420px; padding: 24px; border-radius: 10px; font-size: 18px; min-height: 60px; transition: background 0.2s; }
+  #resultat h2 { margin: 0 0 8px 0; }
+  .saisie-manuelle { max-width: 420px; margin: 20px auto; padding: 0 16px; }
+  input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #1a1c22; color: #fff; box-sizing: border-box; }
+  button { margin-top: 8px; padding: 10px 16px; border-radius: 6px; border: none; background: #D4AF37; color: #111; font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>📷 Scan des invitations à l'entrée</h1>
+<div id="zone-scan"></div>
+<div id="resultat" style="background:#1a1c22;">En attente d'un scan…</div>
+
+<div class="saisie-manuelle">
+  <p style="opacity:.7; font-size:13px;">QR illisible ? Saisis le token manuellement :</p>
+  <input id="token-manuel" placeholder="token de l'invitation">
+  <button onclick="traiterScan(document.getElementById('token-manuel').value)">Vérifier</button>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+let scanEnCours = false;
+const scanner = new Html5Qrcode("zone-scan");
+
+async function traiterScan(token) {
+  if (scanEnCours || !token) return;
+  scanEnCours = true;
+
+  try {
+    const reponse = await fetch("/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token_qr: token }),
+    });
+    const data = await reponse.json();
+    afficherResultat(data);
+  } catch (e) {
+    afficherResultat({ resultat: "invalide" });
+  }
+  setTimeout(() => { scanEnCours = false; }, 2000);
+}
+
+function afficherResultat(data) {
+  const zone = document.getElementById("resultat");
+  const styles = {
+    autorise: { couleur: "#16341f", texte: "✅ Accès autorisé" },
+    deja_scanne: { couleur: "#4a3a10", texte: "⚠️ Déjà scanné" },
+    invalide: { couleur: "#3a1a1a", texte: "❌ Invitation invalide" },
+  };
+  const s = styles[data.resultat] || styles.invalide;
+  zone.style.background = s.couleur;
+  zone.innerHTML = `<h2>${s.texte}</h2>` + (data.nom_complet ? `<p>${data.nom_complet} — ${data.grade.toUpperCase()}</p>` : "");
+}
+
+Html5Qrcode.getCameras().then(cameras => {
+  if (cameras && cameras.length) {
+    scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, traiterScan);
+  }
+}).catch(() => {
+  document.getElementById("zone-scan").innerHTML = "<p style='opacity:.7'>Caméra indisponible — utilise la saisie manuelle ci-dessous.</p>";
+});
+</script>
+</body>
+</html>

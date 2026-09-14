@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Tableau de bord — Arrivées</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #0f1115; color: #fff; margin: 0; padding: 24px; }
+  h1 { font-size: 20px; } label { font-size: 13px; opacity: .7; }
+  input { padding: 8px; border-radius: 6px; border: 1px solid #333; background: #1a1c22; color: #fff; }
+  button { padding: 8px 14px; border-radius: 6px; border: none; background: #D4AF37; color: #111; font-weight: 600; margin-left: 8px; cursor: pointer; }
+  .grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 24px; }
+  .carte { background: #1a1c22; border-radius: 10px; padding: 20px; }
+  .carte .val { font-size: 32px; font-weight: 700; }
+  .carte .lbl { opacity: .6; font-size: 13px; }
+  #journal { margin-top: 24px; max-height: 300px; overflow-y: auto; background: #1a1c22; border-radius: 10px; padding: 12px; }
+  #journal p { margin: 6px 0; font-size: 14px; border-bottom: 1px solid #2a2d34; padding-bottom: 6px; }
+</style>
+</head>
+<body>
+<h1>📊 Tableau de bord — Arrivées en temps réel</h1>
+<label>ID de l'événement</label>
+<input id="ev-id" type="number" placeholder="1">
+<button onclick="demarrer()">Suivre</button>
+
+<div class="grille" id="grille"></div>
+<div id="journal"></div>
+
+<script>
+async function chargerStats(evId) {
+  const r = await fetch(`/evenements/${evId}/stats`);
+  const data = await r.json();
+  const grille = document.getElementById("grille");
+  grille.innerHTML = `
+    <div class="carte"><div class="val">${data.total_arrives}/${data.total_invites}</div><div class="lbl">Total arrivés</div></div>
+    ${Object.entries(data.par_grade).map(([g, v]) => `
+      <div class="carte"><div class="val">${v.arrives}/${v.total}</div><div class="lbl">${g.toUpperCase()}</div></div>
+    `).join("")}
+  `;
+}
+
+function demarrer() {
+  const evId = document.getElementById("ev-id").value;
+  if (!evId) return;
+  chargerStats(evId);
+
+  const protocole = location.protocol === "https:" ? "wss" : "ws";
+  const ws = new WebSocket(`${protocole}://${location.host}/ws/evenement/${evId}`);
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    const journal = document.getElementById("journal");
+    const ligne = document.createElement("p");
+    ligne.textContent = `✅ ${new Date().toLocaleTimeString()} — ${data.prenom} ${data.nom} (${data.grade.toUpperCase()})`;
+    journal.prepend(ligne);
+    chargerStats(evId);
+  };
+}
+</script>
+</body>
+</html>
