@@ -2,7 +2,7 @@ import uuid
 import enum
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Enum, Boolean
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -26,6 +26,28 @@ class ResultatScan(str, enum.Enum):
     INVALIDE = "invalide"
 
 
+class RoleUtilisateur(str, enum.Enum):
+    ADMIN = "admin"
+    ORGANISATEUR = "organisateur"
+    SECURITE = "securite"
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String(150), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    nom = Column(String(100), nullable=True)
+    prenom = Column(String(100), nullable=True)
+    role = Column(Enum(RoleUtilisateur), nullable=False, default=RoleUtilisateur.ORGANISATEUR)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    evenements = relationship("Evenement", back_populates="organisateur", cascade="all, delete-orphan")
+    event_access = relationship("UserEventAccess", back_populates="user", cascade="all, delete-orphan")
+
+
 class Evenement(Base):
     __tablename__ = "evenement"
 
@@ -34,8 +56,23 @@ class Evenement(Base):
     date_evenement = Column(Date, nullable=False)
     lieu = Column(String(200))
     modele_invitation = Column(String(255))  # chemin vers l'image de modèle
+    organisateur_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
+    organisateur = relationship("User", back_populates="evenements")
     invites = relationship("Invite", back_populates="evenement", cascade="all, delete-orphan")
+    access = relationship("UserEventAccess", back_populates="evenement", cascade="all, delete-orphan")
+
+
+class UserEventAccess(Base):
+    __tablename__ = "user_event_access"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    evenement_id = Column(Integer, ForeignKey("evenement.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="event_access")
+    evenement = relationship("Evenement", back_populates="access")
 
 
 class Invite(Base):

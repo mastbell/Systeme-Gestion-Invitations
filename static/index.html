@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Système d’invitation | Accueil</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(18, 25, 38, 0.82);
+      --line: rgba(255,255,255,0.08);
+      --text: #edf2ff;
+      --muted: #9ea9be;
+      --gold: #d4af37;
+      --success: #31d0aa;
+      --shadow: 0 24px 50px rgba(2, 7, 18, 0.5);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, rgba(212,175,55,0.12), transparent 22%), radial-gradient(circle at bottom right, rgba(92,124,255,0.12), transparent 30%), var(--bg);
+      color: var(--text);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 20px 60px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0 22px;
+    }
+    .brand { font-weight: 800; letter-spacing: -0.04em; }
+    .brand span { color: var(--gold); }
+    nav {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 16px;
+      color: var(--text);
+      text-decoration: none;
+      background: rgba(255,255,255,0.02);
+      transition: 0.25s ease;
+      font-weight: 600;
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, var(--gold), #f3d67a);
+      color: #111827;
+      border: none;
+      box-shadow: 0 12px 22px rgba(212,175,55,0.2);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 28px;
+      align-items: center;
+      padding: 50px 0 40px;
+    }
+    .eyebrow {
+      margin: 0 0 14px;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    h1 {
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      line-height: 0.96;
+      margin: 0 0 18px;
+      letter-spacing: -0.06em;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.04rem;
+      line-height: 1.7;
+      max-width: 620px;
+      margin-bottom: 24px;
+    }
+    .cta-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 0.94rem;
+      color: var(--muted);
+    }
+    .stat-item {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      min-width: 120px;
+    }
+    .stat-item strong {
+      display: block;
+      font-size: 1.4rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .panel {
+      background: linear-gradient(180deg, rgba(18,25,38,0.9), rgba(13,19,30,0.9));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .mini-card {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .mini-card strong { display: block; font-size: 1.6rem; margin-bottom: 4px; }
+    .mini-card span { color: var(--muted); }
+    .features {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .feature {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+    }
+    .feature h3 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+    }
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    @media (max-width: 860px) {
+      .hero, .features { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">Invitation<span>Flow</span></div>
+      <nav>
+        <a class="btn" href="/static/auth/login.html">Connexion</a>
+        <a class="btn primary" href="/static/scan-app/ajouter_invite.html">Ouvrir l’admin</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Plateforme événementielle</p>
+        <h1>Gérez les invitations, les accès et les arrivées avec clarté.</h1>
+        <p class="subtitle">
+          Une solution pensée pour les organisateurs, administrateurs et agents de sécurité,
+          avec contrôle d’accès, confidentialité des listes et suivi en temps réel.
+        </p>
+        <div class="cta-row">
+          <a class="btn primary" href="/static/auth/login.html">Se connecter</a>
+          <a class="btn" href="/docs">Voir l’API</a>
+        </div>
+        <div class="stats">
+          <div class="stat-item"><strong>3</strong>rôles</div>
+          <div class="stat-item"><strong>QR</strong>scanning</div>
+          <div class="stat-item"><strong>Live</strong>dashboard</div>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div class="eyebrow">Vue d’ensemble</div>
+        <div class="mini-grid">
+          <div class="mini-card">
+            <strong>1</strong>
+            <span>Création d’événement</span>
+          </div>
+          <div class="mini-card">
+            <strong>2</strong>
+            <span>Import invités</span>
+          </div>
+          <div class="mini-card">
+            <strong>3</strong>
+            <span>QR généré</span>
+          </div>
+          <div class="mini-card">
+            <strong>4</strong>
+            <span>Contrôle d’accès</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="features">
+      <article class="feature">
+        <h3>Administrateur</h3>
+        <p>Vue globale de l’ensemble des événements et des comptes, avec contrôle centralisé.</p>
+      </article>
+      <article class="feature">
+        <h3>Organisateur</h3>
+        <p>Gère ses événements et crée les comptes agents de sécurité liés à son périmètre.</p>
+      </article>
+      <article class="feature">
+        <h3>Sécurité</h3>
+        <p>Accède uniquement aux événements assignés et valide les arrivées avec la caméra ou le QR.</p>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

@@ -4,6 +4,10 @@ Génère automatiquement des invitations personnalisées (nom, prénom, grade)
 avec QR code unique, les envoie par WhatsApp/SMS, et permet de scanner les
 QR codes à l'arrivée des invités avec un tableau de bord en temps réel.
 
+Le projet inclut désormais une couche d’authentification multi-rôles pour
+séparer les accès entre administrateurs, organisateurs et agents de sécurité,
+avec une gestion de confidentialité sur les listes d’invités par événement.
+
 ## Fonctionnalités
 
 - Ajout d'invités par **formulaire** ou **import CSV** en masse
@@ -12,6 +16,12 @@ QR codes à l'arrivée des invités avec un tableau de bord en temps réel.
 - Application de **scan** (caméra du téléphone ou saisie manuelle) avec 3 statuts :
   accès autorisé / déjà scanné / invitation invalide
 - **Tableau de bord temps réel** des arrivées (par grade), mis à jour par WebSocket
+- **Pages d’accueil et de connexion** avec rôles distincts :
+  - administrateur
+  - organisateur
+  - agent de sécurité
+- **Contrôle d’accès par rôle et par événement** pour préserver la confidentialité
+  des listes d’invités et des contenus sensibles
 
 ## Installation
 
@@ -33,27 +43,55 @@ uvicorn app.main:app --reload
 ```
 
 Puis ouvrir :
+- **Page d’accueil** : http://localhost:8000/
+- **Connexion** : http://localhost:8000/static/auth/login.html
 - **Documentation API interactive** : http://localhost:8000/docs
 - **Formulaire événement/invités** : http://localhost:8000/static/scan-app/ajouter_invite.html
 - **Page de scan** : http://localhost:8000/static/scan-app/scan.html
 - **Tableau de bord** : http://localhost:8000/static/scan-app/dashboard.html
 
+## Comptes de démonstration
+
+Au premier lancement, le projet crée automatiquement des comptes de test :
+
+- Administrateur : `admin@demo.local` / `admin123`
+- Organisateur : `organisateur@demo.local` / `org123`
+- Agent de sécurité : `securite@demo.local` / `sec123`
+
+Ces comptes sont destinés au test local et permettent de valider les différents
+parcours d’accès sans casser le fonctionnement actuel du système.
+
 ## Tester le système pas à pas
 
-1. Ouvrir le **formulaire** → créer un événement (nom, date, lieu) → noter l'ID retourné
-2. Toujours dans le formulaire → uploader `static/modeles/modele_defaut.png` comme modèle
-   (un modèle d'exemple est déjà fourni dans ce projet, prêt à l'emploi)
-3. Ajouter un ou plusieurs invités (nom, prénom, téléphone, grade) → l'invitation est
-   générée automatiquement dans `static/invitations_generees/`
-4. Récupérer le token QR d'un invité via `GET /docs` → `/evenements/{id}/invites/`,
-   ou simplement ouvrir l'image générée et scanner le QR affiché
-5. Ouvrir la **page de scan** sur un téléphone (même réseau Wi-Fi) et scanner le QR,
-   ou coller le token dans le champ de saisie manuelle
-6. Ouvrir le **tableau de bord**, entrer l'ID de l'événement → voir l'arrivée
-   apparaître en temps réel
+1. Ouvrir la **page d’accueil** puis aller sur **Connexion**
+2. Se connecter avec un compte démo selon le rôle voulu
+3. Ouvrir le **formulaire** ou le **dashboard organisateur** pour créer un événement
+4. Uploader `static/modeles/modele_defaut.png` comme modèle
+5. Ajouter un ou plusieurs invités
+6. Scanner le QR depuis la **page de scan**
+7. Vérifier le **tableau de bord** pour les arrivées en temps réel
 
-Sans identifiants Twilio configurés, l'envoi WhatsApp/SMS est **simulé** et
-journalisé dans la console du serveur — pratique pour tester sans compte Twilio.
+### Flux recommandés par rôle
+
+- **Admin** : contrôle global, supervision, gestion multi-événements
+- **Organisateur** : création d’événements et comptes sécurité liés à ses événements
+- **Agent de sécurité** : accès limité aux événements qui lui sont assignés
+
+## Sécurité et confidentialité
+
+Le système applique une séparation logique des accès :
+
+- un administrateur peut superviser tous les événements
+- un organisateur ne voit que ses propres événements
+- un agent de sécurité ne peut accéder qu’aux événements assignés
+- les listes d’invités restent filtrées côté backend selon le contexte de l’utilisateur
+
+À titre de démonstration locale, les permissions sont gérées via JWT et rôles,
+mais en production il faut aussi renforcer la protection avec :
+- HTTPS obligatoire
+- mot de passe fort / rotation régulière
+- journalisation des accès
+- authentification forte côté reverse proxy ou cloud
 
 ## Configurer l'envoi réel (Twilio)
 
@@ -94,18 +132,26 @@ python scripts_utilitaires/generer_modele.py
 
 ```
 app/
-├── main.py                # point d'entrée FastAPI
-├── config.py               # configuration (.env)
+├── main.py                # point d'entrée FastAPI + comptes démo / routes auth
+├── config.py               # configuration (.env, JWT)
 ├── database.py              # connexion SQLAlchemy
-├── models/                  # tables de la base de données
+├── models/                  # tables de la base de données + utilisateurs / accès
 ├── schemas/                 # validation des entrées/sorties API
-├── routers/                 # endpoints (événements, invités, envoi, scan)
-└── services/                 # logique métier (QR, génération image, import, envoi)
+├── routers/                 # endpoints (auth, événements, invités, envoi, scan)
+├── services/                # logique métier (auth, QR, génération image, import, envoi)
+└── ...
 
 static/
+├── index.html               # page d’accueil
+├── auth/
+│   └── login.html           # page de connexion
+├── admin/                   # dashboard administrateur
+├── organisateur/            # dashboard organisateur
+├── securite/                # dashboard agent de sécurité
 ├── modeles/                 # modèles d'invitation (dont modele_defaut.png)
 ├── invitations_generees/    # invitations générées par invité
-└── scan-app/                 # pages web (formulaire, scan, dashboard)
+├── scan-app/                # pages web (formulaire, scan, dashboard)
+└── ...
 
 scripts_utilitaires/
 ├── generer_modele.py         # régénère le modèle d'invitation par défaut

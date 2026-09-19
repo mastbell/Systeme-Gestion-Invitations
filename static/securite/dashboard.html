@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Sécurité</title>
+  <style>
+    :root { --bg:#0b1020; --panel:rgba(17,23,34,.86); --line:rgba(255,255,255,.08); --text:#edf2ff; --muted:#9ea9be; --gold:#d4af37; --success:#31d0aa; --danger:#ff6b6b; --shadow:0 22px 45px rgba(2,7,18,.5);} *{box-sizing:border-box} body{margin:0;min-height:100vh;padding:28px 18px;background:radial-gradient(circle at top left, rgba(212,175,55,.12), transparent 22%), radial-gradient(circle at bottom right, rgba(80,110,255,.12), transparent 28%), var(--bg);color:var(--text);font-family:Inter,"Segoe UI",sans-serif} .shell{max-width:900px;margin:0 auto}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:20px}.brand{font-weight:800;font-size:1.5rem;letter-spacing:-.05em}.btn{padding:10px 16px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--text);border-radius:12px;text-decoration:none;font-weight:600;cursor:pointer}.btn.primary{background:linear-gradient(135deg,var(--gold),#f3d67a);color:#111827;border:none;box-shadow:0 12px 22px rgba(212,175,55,.18)} .panel{background:linear-gradient(180deg, rgba(18,25,38,.9), rgba(13,19,30,.9));border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)} .field{display:grid;gap:8px;margin-bottom:14px} label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em} input{padding:12px 14px;border:none;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:var(--text)} .status{margin-top:18px;padding:18px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.02)} .status h3{margin:0 0 10px} .ok{border-color:rgba(49,208,170,.35);background:rgba(49,208,170,.12);color:#bff7e8} .warn{border-color:rgba(245,185,66,.35);background:rgba(245,185,66,.12);color:#ffe8ad} .danger{border-color:rgba(255,107,107,.35);background:rgba(255,107,107,.12);color:#ffd2d2} @media (max-width:640px){.topbar{flex-direction:column;align-items:flex-start}} </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">Sécurité<span style="color:var(--gold)">Check</span></div>
+      <button class="btn primary" onclick="logout()">Déconnexion</button>
+    </header>
+
+    <div class="panel">
+      <div class="field">
+        <label>Événement ID</label>
+        <input id="evenementId" type="number" placeholder="1" />
+      </div>
+      <button class="btn primary" onclick="ouvrirScan()">Ouvrir le scan</button>
+      <div class="status warn" id="statusBox">
+        <h3>Disponibilité du badge</h3>
+        <p>Le système attend un scan.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/static/auth/login.html';
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      window.location.href = '/static/auth/login.html';
+    }
+
+    function ouvrirScan() {
+      const id = document.getElementById('evenementId').value;
+      if (!id) return;
+      window.location.href = `/static/scan-app/scan.html?event=${id}`;
+    }
+  </script>
+</body>
+</html>

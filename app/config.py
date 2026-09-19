@@ -29,5 +29,10 @@ class Settings(BaseSettings):
     dossier_invitations: str = "static/invitations_generees"
     dossier_fonts: str = "fonts"
 
+    # JWT — clés et algorithme pour l'authentification sécurisée
+    jwt_secret_key: str = "cle_secrete_demo_systeme_invitations"
+    jwt_algorithm: str = "HS256"
+    jwt_expiration_minutes: int = 60
+
 
 settings = Settings()
